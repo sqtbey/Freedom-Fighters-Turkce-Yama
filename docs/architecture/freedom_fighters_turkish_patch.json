@@ -1,0 +1,223 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Freedom Fighters Turkish Translation Architecture",
+    "output": "freedom_fighters_turkish_patch.html",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "full-pipeline",
+        "label": "Full Localization Pipeline",
+        "focus": ["game_assets", "loc_engine", "translation_layer", "patch_injector", "game_runtime"],
+        "note": "Complete dataflow from Glacier 1 game assets to patched runtime and GitHub release."
+      },
+      {
+        "id": "translation-processing",
+        "label": "Translation & Normalization",
+        "focus": ["loc_engine", "translation_layer", "ascii_filter", "master_dict"],
+        "note": "Extraction, proper name preservation, and ASCII transliteration."
+      },
+      {
+        "id": "distribution-flow",
+        "label": "Packaging & Distribution",
+        "focus": ["patch_injector", "backup_manager", "installer_pkg", "github_repo"],
+        "note": "Patch generation, safe backup, and automated GitHub release."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "game_assets",
+      "type": "database",
+      "label": "Glacier 1 Assets",
+      "sublabel": "Scenes/*.ZIP (88 .LOC)",
+      "pos": [40, 160],
+      "size": [140, 64],
+      "tag": "IO Interactive"
+    },
+    {
+      "id": "loc_engine",
+      "type": "backend",
+      "label": "LOC Binary Parser",
+      "sublabel": "Tree & Offset Deserializer",
+      "pos": [240, 160],
+      "size": [140, 64],
+      "tag": "100% Roundtrip"
+    },
+    {
+      "id": "master_dict",
+      "type": "database",
+      "label": "Master Translation",
+      "sublabel": "2,102 Verified Strings",
+      "pos": [440, 160],
+      "size": [140, 64],
+      "tag": "100% Coverage"
+    },
+    {
+      "id": "patch_injector",
+      "type": "backend",
+      "label": "Patch Injector",
+      "sublabel": "LOC Serializer & ZIP In-Place",
+      "pos": [640, 160],
+      "size": [140, 64],
+      "tag": "Atomic Update"
+    },
+    {
+      "id": "game_runtime",
+      "type": "cloud",
+      "label": "Freedom Fighters",
+      "sublabel": "Freedom.exe (Patched)",
+      "pos": [840, 160],
+      "size": [140, 64],
+      "tag": "Playable Turkish"
+    },
+    {
+      "id": "backup_manager",
+      "type": "database",
+      "label": "Backup Archive",
+      "sublabel": "Original_LOC_Backup.zip",
+      "pos": [40, 320],
+      "size": [140, 64],
+      "tag": "Zero Risk Rollback"
+    },
+    {
+      "id": "translation_layer",
+      "type": "backend",
+      "label": "Translation Engine",
+      "sublabel": "9 Modular Dictionaries",
+      "pos": [240, 320],
+      "size": [140, 64],
+      "tag": "Story + UI + Combat"
+    },
+    {
+      "id": "ascii_filter",
+      "type": "security",
+      "label": "ASCII Normalizer",
+      "sublabel": "Latin-1 Font Safeguard",
+      "pos": [440, 320],
+      "size": [140, 64],
+      "tag": "No Glyph Glitches"
+    },
+    {
+      "id": "installer_pkg",
+      "type": "external",
+      "label": "Patch Package",
+      "sublabel": "Install_Yama.bat / Uninstaller",
+      "pos": [640, 320],
+      "size": [140, 64],
+      "tag": "One-Click Setup"
+    },
+    {
+      "id": "github_repo",
+      "type": "cloud",
+      "label": "GitHub Repository",
+      "sublabel": "sqtbey/freedom-fighters-tr",
+      "pos": [840, 320],
+      "size": [140, 64],
+      "tag": "Open Source"
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Core Patch Pipeline",
+      "wraps": ["loc_engine", "translation_layer", "ascii_filter", "master_dict", "patch_injector"]
+    },
+    {
+      "kind": "region",
+      "label": "Game & Distribution",
+      "wraps": ["game_assets", "backup_manager", "game_runtime", "installer_pkg", "github_repo"]
+    }
+  ],
+  "connections": [
+    {
+      "id": "assets-to-parser",
+      "from": "game_assets",
+      "to": "loc_engine",
+      "variant": "emphasis"
+    },
+    {
+      "id": "assets-to-backup",
+      "from": "game_assets",
+      "to": "backup_manager",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "parser-to-trans",
+      "from": "loc_engine",
+      "to": "translation_layer",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "trans-to-ascii",
+      "from": "translation_layer",
+      "to": "ascii_filter"
+    },
+    {
+      "id": "filter-to-master",
+      "from": "ascii_filter",
+      "to": "master_dict",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "master-to-patcher",
+      "from": "master_dict",
+      "to": "patch_injector",
+      "variant": "emphasis"
+    },
+    {
+      "id": "patcher-to-game",
+      "from": "patch_injector",
+      "to": "game_runtime",
+      "variant": "emphasis"
+    },
+    {
+      "id": "patcher-to-installer",
+      "from": "patch_injector",
+      "to": "installer_pkg",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "installer-to-github",
+      "from": "installer_pkg",
+      "to": "github_repo",
+      "variant": "emphasis"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Glacier Reverse Engineering",
+      "items": [
+        "Recursive node tree with dynamic offset tables",
+        "Byte-exact serializer preserving traversal order",
+        "Validated across all 88 game .LOC archives"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Turkish Translation Scope",
+      "items": [
+        "100% of all UI, menus, settings and item names",
+        "Full story, cutscenes and News TV broadcasts",
+        "All level objectives, map briefings and clues",
+        "All combat voices: FFs, Civilians, Soviets, Defectors"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Constraints & Compatibility",
+      "items": [
+        "Strict proper name preservation (Chris, Troy, Jones, etc.)",
+        "ASCII Turkish transliteration avoiding bitmap font corruption",
+        "Full support for Steam, Epic Games, GOG & CD releases"
+      ]
+    }
+  ]
+}
